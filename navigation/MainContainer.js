@@ -172,6 +172,17 @@ export default function MainContainer(){
           }}
           component={CategoryScreen}
         />
+        <Drawer.Screen
+          name={expenseName}
+          options={{
+            drawerLabel: "Expense",
+            title: "Expense",
+            drawerIcon: () => (
+              <MaterialIcons name="category" size={20} color="#808080" />
+            )
+          }}
+          component={ExpenseScreen}
+        />
       </Drawer.Navigator>
         </NavigationContainer>
     )
