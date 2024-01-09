@@ -164,8 +164,8 @@ export default function MainContainer(){
         <Drawer.Screen
           name={categoryName}
           options={{
-            drawerLabel: "Home",
-            title: "Home",
+            drawerLabel: "Category management",
+            title: "Category management",
             drawerIcon: () => (
               <MaterialIcons name="category" size={20} color="#808080" />
             )

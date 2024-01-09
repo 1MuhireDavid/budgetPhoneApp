@@ -78,8 +78,7 @@ export default function HomeScreen({ navigation }) {
      await db.transaction((tx) => {
         tx.executeSql("select * from Transactions order by date desc",[],
         (_,results) => {
-          var len = results.rows.length;
-          console.log(results.rows);
+          console.log(results.rows._array);
         const transactionData = results.rows._array.map(row => ({
           id: row.id,
           type: row.type,
