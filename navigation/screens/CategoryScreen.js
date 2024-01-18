@@ -88,55 +88,6 @@ export default function CategoryScreen({navigation}) {
     return (
         <>
         <Tabs/>
-        <Pressable onPress={onAddIncomeCategory} style={styles.floatingButton}>
-          <Ionicons name="add-circle" size={100} color="#1664A2" />
-          <Modal isOpen={showModal} onClose={() => setShowModal(false)}>
-            <Modal.Content maxWidth="400px">
-              <Modal.CloseButton />
-              <Modal.Header>Create new account</Modal.Header>
-              <Modal.Body>
-              <FormControl isRequired>
-                  <FormControl.Label>name</FormControl.Label>
-                  <Input
-                    type="text"
-                    name="name"
-                    onChangeText={(name) => setName(name)}
-                  />
-                </FormControl>
-                <FormControl isRequired>
-                  <FormControl.Label>Initial amount</FormControl.Label>
-                  <Input
-                    type="number"
-                    name="value"
-                    onChangeText={(value) => setValue(value)}
-                  />
-                </FormControl>              
-                <FormControl isRequired>
-                  <FormControl.Label>Notes</FormControl.Label>
-                  <Input
-                    type="text"
-                    name="notes"
-                    onChangeText={(notes) => setNotes(notes)}
-                  />
-                </FormControl>
-              </Modal.Body>
-              <Modal.Footer>
-                <Button.Group space={2}>
-                  <Button
-                    variant="ghost"
-                    colorScheme="blueGray"
-                    onPress={() => {
-                      setShowModal(false);
-                    }}
-                  >
-                    Cancel
-                  </Button>
-                  <Button onPress={onSaveCategory}>Save</Button>
-                </Button.Group>
-              </Modal.Footer>
-            </Modal.Content>
-          </Modal>
-        </Pressable>
       </>
     )
 }

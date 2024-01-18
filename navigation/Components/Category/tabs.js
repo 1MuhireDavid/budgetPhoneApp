@@ -1,17 +1,56 @@
 import { Text, View } from "native-base";
-import React from "react";
+import React, {useState} from "react";
+import { SceneMap, TabView,TabBar } from "react-native-tab-view";
+import Income from "./Income";
+import Expense from "./expense";
+import { StyleSheet, useWindowDimensions } from "react-native";
+import Colors from "../../color";
 
+const renderScene = SceneMap({
+  first:Income,
+  second:Expense
+})
 function Tabs() {
+  const layout = useWindowDimensions();
+  const [index, setIndex] = useState(0);
+  const [routes] = useState([
+    {
+      key: "first",
+      title: "Income"
+    },
+    {
+      key: "second",
+      title: "Expense"
+    }
+  ]);
+  const renderTabsbar = (props) => {
+    <TabBar 
+    {...props}
+    tabStyle= {styles.tabStyle}
+    indicatorStyle={{backgroundColor: Colors.black}}
+    activeColor={Colors.main}
+    inactiveColor={Colors.white}
+    renderLabel={({ route, color }) => (
+      <Text style={{ color, ...styles.text}}>{route.title}</Text>
+    )}
+    />
+  };
+
+
   return (
-    <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-      <Text
-        onPress={() => navigation.navigate("Income")}
-        style={{ fontSize: 26, fontWeight: "bold" }}
-      >
-        TAbs
-      </Text>
-    </View>
+    <TabView navigationState={{index, routes}} renderScene={renderScene}
+    onIndexChange={setIndex} initialLayout={{ width: layout.width }}
+    />
   );
 }
 
+const styles = StyleSheet.create({
+  tabStyle:{
+    backgroundColor: "black"
+  },
+  text: {
+    fontSize: 13,
+    fontweight: "bold",
+  }
+});
 export default Tabs;

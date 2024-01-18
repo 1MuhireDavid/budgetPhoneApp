@@ -188,7 +188,7 @@ function BudgetScreen() {
         <Modal isOpen={showModal} onClose={() => setShowModal(false)}>
           <Modal.Content maxWidth="400px">
             <Modal.CloseButton />
-            <Modal.Header>Add Income</Modal.Header>
+            <Modal.Header>Add Budget</Modal.Header>
             <Modal.Body>
               <FormControl isRequired>
                 <FormControl.Label>Budget amount</FormControl.Label>

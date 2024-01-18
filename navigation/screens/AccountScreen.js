@@ -20,6 +20,7 @@ import { StyleSheet } from "react-native";
 
 
 const db = SQLite.openDatabase("budgetPhoneApp.db");
+
 function AccountScreen() {
 
   const [showModal, setShowModal] = useState(false);
@@ -66,7 +67,7 @@ function AccountScreen() {
       await db.transaction(
         (tx) => {
           tx.executeSql("select * from Accounts", [], (_, results) => {
-            //  console.log(results.rows._array);
+             // console.log(results.rows._array);
             const accountData = results.rows._array.map(row => ({
               id: row.id,
               name: row.name,

@@ -19,6 +19,8 @@ import AccountScreen from "./screens/AccountScreen";
 import ExpenseScreen from "./screens/ExpenseScreen";
 import IncomeScreen from "./screens/IncomeScreen";
 import BudgetScreen from "./screens/BudgetScreen";
+import SignUpScreen from "./screens/SignUpScreen";
+import LoginScreen from "./screens/LoginScreen";
 
 const homeName = "Home";
 const categoryName = "Category";
@@ -28,14 +30,17 @@ const accountName = "Account";
 const expenseName = "Expense";
 const incomeName = "Income";
 const budgetName = "Budget";
+const Signup = "Signup";
+const Login = "Login";
 
 
 const Drawer = createDrawerNavigator();
 
-export default function MainContainer(){
+export default function MainContainer(props){
+  
     return (
         <NavigationContainer>
-            <Drawer.Navigator
+            <Drawer.Navigator 
         drawerContent={
           (props) => {
             return (
@@ -57,6 +62,7 @@ export default function MainContainer(){
                       width: 130,
                       borderRadius: 65,
                     }}
+                    alt={"Profile"}
                   />
                   <Text
                     style={{
@@ -65,13 +71,13 @@ export default function MainContainer(){
                       fontWeight: "bold",
                       color: "#111"
                     }}
-                  >Isabella Joanna</Text>
+                  > Product manager</Text>
                   <Text
                     style={{
                       fontSize: 16,
                       color: "#111"
                     }}
-                  >Product Manager</Text>
+                  ></Text>
                 </View>
                 <DrawerItemList {...props} />
               </SafeAreaView>
@@ -182,6 +188,28 @@ export default function MainContainer(){
             )
           }}
           component={ExpenseScreen}
+        />
+        <Drawer.Screen
+          name={Signup}
+          options={{
+            drawerLabel: "Signup",
+            title: "Signup",
+            drawerIcon: () => (
+              <MaterialIcons name="category" size={20} color="#808080" />
+            )
+          }}
+          component={SignUpScreen}
+        />
+        <Drawer.Screen
+          name={Login}
+          options={{
+            drawerLabel: "Login",
+            title: "Login",
+            drawerIcon: () => (
+              <MaterialIcons name="category" size={20} color="#808080" />
+            )
+          }}
+          component={LoginScreen}
         />
       </Drawer.Navigator>
         </NavigationContainer>

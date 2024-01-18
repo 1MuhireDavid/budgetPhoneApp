@@ -1,31 +1,39 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, ScrollView } from "react-native";
+import { View, Text, StyleSheet,DatePickerIOS, ScrollView, TextInput,Platform } from "react-native";
+import { CheckIcon, Select } from "native-base";
 import { LinearGradient } from "expo-linear-gradient";
-import { Box, Center,FormControl,Modal, Divider, Input, HStack, Image, Pressable, Button, VStack } from "native-base";
+import { FormControl,Modal, Divider, Input, HStack, Image, Pressable, Button, VStack } from "native-base";
 import Colors from "../color";
 import { MaterialIcons,Ionicons, FontAwesome } from '@expo/vector-icons';
-import * as SQLite from 'expo-sqlite'
+import DateTimePicker from '@react-native-community/datetimepicker';
+import * as SQLite from 'expo-sqlite';
+
+const db = SQLite.openDatabase('budgetPhoneApp.db');
 
 export default function HomeScreen({ navigation }) {
-  const db = SQLite.openDatabase('budgetPhoneApp.db');
 
   const [showModal, setShowModal] = useState(false);
   const [showModal1, setShowModal1] = useState(false);
+  const [showPicker, setShowpicker] = useState(false);
+  const [showPicker1, setShowpicker1] = useState(false);
   const [category, setCategory] = useState("");
   const [value, setValue] = useState("");
   const [account, setAccount] = useState("");
-  const [date, setDate] = useState("");
-  const [time, setTime] = useState("");
+  const [date, setDate] = useState(new Date());
+  const [dateOftransaction, setDateOfTransaction] = useState("");
   const [froms, setFrom] = useState("");
   const [notes, setNotes] = useState("");
   const [tos, setTos] = useState("");
   const [transactions, setTransactions] = useState([]);
+  const [expenseCategory, setExpenseCategory] = useState([]);
+  const [incomeCategory, setIncomeCategory] = useState([]);
+  const [accounts, setAccounts] = useState([]);
 
   useEffect(()=>{
     createTable();
-    fetchTransactions();
+    fetchData();
   },[]);
-
+  
   const onAddIncome = () =>{
     setShowModal(true);
   }
@@ -34,23 +42,31 @@ export default function HomeScreen({ navigation }) {
   } 
   const createTable = () => {
     db.transaction((tx) => {
-      tx.executeSql("CREATE TABLE IF NOT EXISTS Transactions (id INTEGER PRIMARY KEY AUTOINCREMENT, type TEXT, category TEXT, value INTEGER, account TEXT, date TEXT NULL, time TEXT NULL, froms TEXT NULL, tos TEXT NULL, notes TEXT NULL);");
+      tx.executeSql("CREATE TABLE IF NOT EXISTS Transactions (id INTEGER PRIMARY KEY AUTOINCREMENT, type TEXT, category INTEGER, value INTEGER, account INTEGER, date TEXT NULL, froms TEXT NULL, tos TEXT NULL, notes TEXT NULL);");
     });
     console.log("table transaction created", "trans")
   };
-  const onSaveIncome = async() => {
+  const onSaveIncome = async () => {
     try {
       await db.transaction(async (tx) => {
         await tx.executeSql(
-          "insert into Transactions (type, category, value, account, date, time, froms, notes) values (?, ?, ?, ?, ?, ?, ?, ?)",
-          ["income", category, value, account, date, time, froms, notes],
-          (txObj, resultSet) => console.log(resultSet.insertId),
+          "insert into Transactions (type, category, value, account, date, froms, notes) values (?, ?, ?, ?, ?, ?, ?)",
+          ["income", category, value, account, dateOftransaction, froms, notes],
+          (txObj, resultSet) => {
+            console.log(resultSet.insertId);
+          },
           (txObj, error) => console.log('Error', error, "onSaveIncome")
         );
-      })
+
+        // Update the account balance
+        const accountId = account; // Assuming account is the ID
+        const currentBalance = await tx.executeSql("SELECT value FROM Accounts WHERE id = ?", [accountId]);
+        const newBalance = currentBalance + parseFloat(value);
+        await tx.executeSql("UPDATE Accounts SET value = ? WHERE id = ?", [newBalance, accountId]);
+      });
+
       setShowModal(false); // Close the modal
       alert("Successfully saved Income");
-      fetchTransactions(); // Refresh the transactions
     } catch (error) {
       console.log(error);
     }
@@ -59,49 +75,99 @@ export default function HomeScreen({ navigation }) {
     try {
       await db.transaction(async (tx) => {
         await tx.executeSql(
-          "insert into Transactions (type, category, value, account, date, time, tos, notes) values (?, ?, ?, ?, ?, ?, ?, ?)",
-          ["expense", category, value, account, date, time, tos, notes],
+          "insert into Transactions (type, category, value, account, date, tos, notes) values (?, ?, ?, ?, ?, ?, ?)",
+          ["expense", category, value, account, dateOftransaction, tos, notes],
           (txObj, resultSet) => {
             console.log(resultSet.insertId);
-            alert("Successfully saved Expense");
-            fetchTransactions(); // Refresh the transactions
           },
           (txObj, error) => console.log("Error", error)
         );
+
+        // Update the account balance
+        const accountId = account; // Assuming account is the ID
+        const currentBalance = await tx.get("SELECT value FROM Accounts WHERE id = ?", [accountId]);
+        const newBalance = currentBalance - parseFloat(value);
+        await tx.executeSql("UPDATE Accounts SET value = ? WHERE id = ?", [newBalance, accountId]);
       });
+
+      setShowModal(false); // Close the modal
+      alert("Successfully saved Expense");
     } catch (error) {
       console.log(error);
     }
   };
-  const fetchTransactions = async () => {
+
+  const fetchData = async () => {
     try {
-     await db.transaction((tx) => {
-        tx.executeSql("select * from Transactions order by date desc",[],
-        (_,results) => {
-          console.log(results.rows._array);
-        const transactionData = results.rows._array.map(row => ({
-          id: row.id,
-          type: row.type,
-          category: row.category,
-          value: row.value,
-          account: row.account,
-          date: row.date,
-          time: row.time,
-          froms: row.froms,
-          tos: row.tos,
-          notes: row.notes,
-        }));
-        setTransactions(transactionData);
-        console.log(transactionData);
-        
-        })
-      },(txObj, error) => console.log('Error ', error, "getData") 
-      )
-      console.log(category, account, date, time, froms, notes, value)
+      await db.transaction(
+        (tx) => {
+          tx.executeSql("select * from Categorys WHERE type = 'expense'", [], (_, results) => {
+              console.log(results.rows._array);
+            const categoryData = results.rows._array.map(row => ({
+              id: row.id,
+              name: row.name,
+            }));
+            setExpenseCategory(categoryData);
+
+          });
+        },
+        (txObj, error) => console.log("Error ", error, "getData")
+      );
+      await db.transaction(
+        (tx) => {
+          tx.executeSql("select * from Categorys WHERE type = 'income'", [], (_, results) => {
+            //  console.log(results.rows._array);
+            const categoryData = results.rows._array.map(row => ({
+              id: row.id,
+              name: row.name,
+            }));
+            setIncomeCategory(categoryData);
+
+          });
+        },
+        (txObj, error) => console.log("Error ", error, "getData")
+      );
+      await db.transaction(
+        (tx) => {
+          tx.executeSql("select * from Accounts", [], (_, results) => {
+            //  console.log(results.rows._array);
+            const accountData = results.rows._array.map(row => ({
+              id: row.id,
+              name: row.name,
+              value: row.value,
+              notes: row.notes,
+            }));
+            setAccounts(accountData);
+            console.log(accountData);
+
+          });
+        },
+        (txObj, error) => console.log("Error ", error, "getData")
+      );
     } catch (error) {
       console.log(error);
     }
+  };
+
+  const toggleDatePicker = () => {
+    setShowpicker(!showPicker);
+  };
+  const toggleDatePicker1 = () => {
+    setShowpicker1(!showPicker1);
+  };
+  const onChange = ({type}, selectedDate) =>{
+    if(type == "set"){
+      const currentDate =  selectedDate;
+      setDate(currentDate);
+      if (Platform.OS === "android"){
+        toggleDatePicker();
+        setDateOfTransaction(currentDate.toDateString());
+      }
+    }else{
+      toggleDatePicker();
+    }
   }
+
   return (
     <>
     <ScrollView overflow="hidden"> 
@@ -170,7 +236,14 @@ export default function HomeScreen({ navigation }) {
           <Modal.Body>
             <FormControl isRequired>
               <FormControl.Label>category</FormControl.Label>
-              <Input type="text" name="category" onChangeText={(category) => setCategory(category)}/>
+              <Select minWidth="200" accessibilityLabel="Choose Category" placeholder="Choose Category" _selectedItem={{
+        bg: "teal.600",
+        endIcon: <CheckIcon size={5} />
+      }} mt="1" onValueChange={id => setCategory(id)}>
+          {incomeCategory.map((category) => (
+      <Select.Item key={category.id} label={category.name} value={category.id} />
+    ))}
+        </Select>
             </FormControl>
             <FormControl isRequired>
               <FormControl.Label>value</FormControl.Label>
@@ -178,19 +251,30 @@ export default function HomeScreen({ navigation }) {
             </FormControl>
             <FormControl mt="3" isRequired>
               <FormControl.Label>account</FormControl.Label>
-              <Input type="text" name="account" onChangeText={(account) => setAccount(account)}/>
+              <Select minWidth="200" accessibilityLabel="Choose Account" placeholder="Choose Account" _selectedItem={{
+        bg: "teal.600",
+        endIcon: <CheckIcon size={5} />
+      }} mt="1" onValueChange={(id) => setAccount(id)}>
+          {accounts.map((account) => (
+      <Select.Item key={account.id} label={account.name} value={account.id} />
+    ))}
+        </Select>
             </FormControl>
             <FormControl isRequired>
               <FormControl.Label>date</FormControl.Label>
-              <Input type="text" name="date" onChangeText={(date) => setDate(date)}/>
-            </FormControl>
-            <FormControl isRequired>
-              <FormControl.Label>time</FormControl.Label>
-              <Input type="text" name="time" onChangeText={(time) => setTime(time)}/>
+              {showPicker && (<DateTimePicker
+              mode="date"
+              display="spinner"
+              value={date}
+              onChange={onChange}
+              />)}
+              {!showPicker && (<Pressable onPress={toggleDatePicker}>
+              <TextInput value={dateOftransaction} name="dateOftransaction" placeholder="Sat Aug 21 2004" editable={false} onChangeText={setDateOfTransaction}/>
+              </Pressable>)}
             </FormControl>
             <FormControl>
               <FormControl.Label>from</FormControl.Label>
-              <Input type="text" name="froms" onChangeText={(froms) => setFrom(froms)}/>
+              <Input type="text" isDisabled={true} name="froms" onChangeText={(froms) => setFrom(froms)}/>
             </FormControl>
             <FormControl mt="3">
               <FormControl.Label>notes</FormControl.Label>
@@ -225,7 +309,14 @@ export default function HomeScreen({ navigation }) {
           <Modal.Body>
           <FormControl isRequired>
               <FormControl.Label>category</FormControl.Label>
-              <Input type="text" name="category" onChangeText={(category) => setCategory(category)}/>
+              <Select minWidth="200" accessibilityLabel="Choose Category" placeholder="Choose Category" _selectedItem={{
+        bg: "teal.600",
+        endIcon: <CheckIcon size={5} />
+      }} mt="1" onValueChange={id => setCategory(id)}>
+          {expenseCategory.map((category) => (
+      <Select.Item key={category.id} label={category.name} value={category.id} />
+    ))}
+        </Select>
             </FormControl>
             <FormControl isRequired>
               <FormControl.Label>value</FormControl.Label>
@@ -233,15 +324,26 @@ export default function HomeScreen({ navigation }) {
             </FormControl>
             <FormControl mt="3" isRequired>
               <FormControl.Label>account</FormControl.Label>
-              <Input type="text" name="account" onChangeText={(account) => setAccount(account)}/>
+              <Select minWidth="200" accessibilityLabel="Choose Account" placeholder="Choose Account" _selectedItem={{
+        bg: "teal.600",
+        endIcon: <CheckIcon size={5} />
+      }} mt="1" onValueChange={(id) => setAccount(id)}>
+          {accounts.map((account) => (
+      <Select.Item key={account.id} label={account.name} value={account.id} />
+    ))}
+        </Select>
             </FormControl>
             <FormControl isRequired>
               <FormControl.Label>date</FormControl.Label>
-              <Input type="text" name="date" onChangeText={(date) => setDate(date)}/>
-            </FormControl>
-            <FormControl isRequired>
-              <FormControl.Label>time</FormControl.Label>
-              <Input type="text" name="time" onChangeText={(time) => setTime(time)}/>
+              {showPicker && (<DateTimePicker
+              mode="date"
+              display="spinner"
+              value={date}
+              onChange={onChange}
+              />)}
+              {!showPicker1 && (<Pressable onPress={toggleDatePicker1}>
+              <TextInput value={dateOftransaction} name="dateOftransaction" placeholder="Sat Aug 21 2004" editable={false} onChangeText={setDateOfTransaction}/>
+              </Pressable>)}
             </FormControl>
             <FormControl>
               <FormControl.Label>to</FormControl.Label>
