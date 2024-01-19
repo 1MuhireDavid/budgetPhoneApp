@@ -19,7 +19,7 @@ function Tabs() {
       title: "Income"
     },
     {
-      key: "second",
+      key: "second", 
       title: "Expense"
     }
   ]);
