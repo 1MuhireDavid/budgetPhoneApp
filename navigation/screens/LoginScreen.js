@@ -10,15 +10,13 @@ import {
 import React, { useState } from "react";
 import Colors from "../color.js";
 import { MaterialIcons, Ionicons } from "@expo/vector-icons";
-import { useNavigation } from "@react-navigation/native";
 import SignUpScreen from "./SignUpScreen.js";
 import { TouchableOpacity } from "react-native";
 
-function LoginScreen() {
+function LoginScreen(props) {
   const [username, setName] = useState("");
   const [password, setpassword] = useState("");
-  
-  const navigation = useNavigation();
+  const {navigation} = props;
   return (
     <Box flex={1} bg="#fff" alignItems="center" justifyContent="center">
       <Heading> Login</Heading>
@@ -54,7 +52,7 @@ function LoginScreen() {
       >
         Login
       </Button>
-      <TouchableOpacity onPress={() => navigation.navigate("Signup")}>
+      <TouchableOpacity onPress={() => navigation.navigate("SignUp")}>
         <Text>Move to Signup Screen</Text>
       </TouchableOpacity>
     </Box>

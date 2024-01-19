@@ -19,8 +19,6 @@ import AccountScreen from "./screens/AccountScreen";
 import ExpenseScreen from "./screens/ExpenseScreen";
 import IncomeScreen from "./screens/IncomeScreen";
 import BudgetScreen from "./screens/BudgetScreen";
-import SignUpScreen from "./screens/SignUpScreen";
-import LoginScreen from "./screens/LoginScreen";
 
 const homeName = "Home";
 const categoryName = "Category";
@@ -30,16 +28,15 @@ const accountName = "Account";
 const expenseName = "Expense";
 const incomeName = "Income";
 const budgetName = "Budget";
-const Signup = "Signup";
-const Login = "Login";
+
 
 
 const Drawer = createDrawerNavigator();
 
-export default function MainContainer(props){
-  
+export default function MainContainer({route}){
+
     return (
-        <NavigationContainer>
+        <>
             <Drawer.Navigator 
         drawerContent={
           (props) => {
@@ -100,6 +97,7 @@ export default function MainContainer(props){
             color: "#111"
           }
         }}
+        
       >
         <Drawer.Screen
           name={homeName}
@@ -178,40 +176,7 @@ export default function MainContainer(props){
           }}
           component={CategoryScreen}
         />
-        <Drawer.Screen
-          name={expenseName}
-          options={{
-            drawerLabel: "Expense",
-            title: "Expense",
-            drawerIcon: () => (
-              <MaterialIcons name="category" size={20} color="#808080" />
-            )
-          }}
-          component={ExpenseScreen}
-        />
-        <Drawer.Screen
-          name={Signup}
-          options={{
-            drawerLabel: "Signup",
-            title: "Signup",
-            drawerIcon: () => (
-              <MaterialIcons name="category" size={20} color="#808080" />
-            )
-          }}
-          component={SignUpScreen}
-        />
-        <Drawer.Screen
-          name={Login}
-          options={{
-            drawerLabel: "Login",
-            title: "Login",
-            drawerIcon: () => (
-              <MaterialIcons name="category" size={20} color="#808080" />
-            )
-          }}
-          component={LoginScreen}
-        />
       </Drawer.Navigator>
-        </NavigationContainer>
+        </>
     )
 }
