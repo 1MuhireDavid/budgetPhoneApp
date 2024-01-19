@@ -3,6 +3,7 @@ import { Button, ScrollView, Text, View } from "native-base";
 import * as SQLite from 'expo-sqlite';
 import { Ionicons } from "@expo/vector-icons";
 import { TextInput, TouchableOpacity,Modal } from "react-native";
+
 const db = SQLite.openDatabase('budgetPhoneApp.db');
 
 export default function TransactionScreen({navigation}) {
@@ -11,26 +12,44 @@ export default function TransactionScreen({navigation}) {
   const [updatedTransaction, setUpdatedTransaction] = useState({});
   const [updatedCategory, setUpdatedCategory] = useState('');
   const [updatedAccount, setUpdatedAccount] = useState('');
-  const [updatedValue, setUpdatedValue] = useState('');
+  const [updatedValue, setUpdatedValue] = useState();
   const [updatedDate, setUpdatedDate] = useState('');
   const [updatedFrom, setUpdatedFrom] = useState('');
   const [updatedNotes, setUpdatedNotes] = useState('');
 
-    const handleUpdate = (transaction) => {
-      setUpdatedTransaction(transaction);
-      setUpdatedCategory(transaction.category);
-      setUpdatedAccount(transaction.account);
-      setUpdatedValue(transaction.value);
-      setUpdateModalVisible(true);
+    const handleUpdate = async(transactionId) => {
+      try {
+        await db.transaction(
+          (tx) => {
+            tx.executeSql(`select * from Transactions WHERE id = ${transactionId}`, [], (_, results) => {
+                console.log(results.rows._array);
+                
+                setUpdatedTransaction(transactionData);
+                setUpdatedCategory(transactionData.category);
+                setUpdatedAccount(transactionData.account);
+                setUpdatedValue(transactionData.value);
+                setUpdatedDate(transactionData.date);
+                setUpdatedFrom(transactionData.froms);
+                setUpdatedNotes(transactionData.notes);
+                setUpdateModalVisible(true);
+
+            });
+          },
+          (txObj, error) => console.log("Error ", error, "getData")
+        );
+      } catch (error) {
+        console.log(error, "error")
+      }
     };
   
     const updateTransaction = async () => {
+
       try {
         await db.transaction(
           (tx) => {
             tx.executeSql(
-              "UPDATE Transactions SET category = ?, account = ?, value = ? WHERE id = ?",
-              [updatedCategory, updatedAccount, updatedValue, updatedTransaction.id],
+              "UPDATE Transactions SET category = ?, value = ?, account = ?, date = ?, froms = ?, notes = ? WHERE id = ?",
+              [updatedCategory, updatedValue, updatedAccount,updatedDate,updatedFrom,updatedNotes, updatedTransaction.id],
               (_, results) => {
                 if (results.rowsAffected > 0) {
                   console.log(`Transaction with ID ${updatedTransaction.id} updated successfully`);
@@ -212,8 +231,8 @@ export default function TransactionScreen({navigation}) {
                 style={{ marginBottom: 16, padding: 8, borderColor: '#ccc', borderWidth: 1, borderRadius: 4 }}
               />
               </View>
-              <Button style={{ color: 'white', marginBottom: "2px"}} title="Update" onPress={updateTransaction} />
-              <Button title="Cancel" onPress={() => setUpdateModalVisible(false)} />
+              <Button style={{ color: 'white', margin: "10px", backgroundColor: "black"}} onPress={updateTransaction} > Update</Button>
+              <Button style={{ color: 'black', marginBottom: "10px", backgroundColor: "wheat"}} onPress={() => setUpdateModalVisible(false)} >Cancel</Button>
             </View>
           </View>
         </Modal>

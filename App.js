@@ -6,7 +6,6 @@ import { NavigationContainer } from "@react-navigation/native";
 import { SafeAreaView, Text } from "react-native";
 
 export default function App() {
-  const isAuthenticated = false;
   
   return (
     <NavigationContainer>
