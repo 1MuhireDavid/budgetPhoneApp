@@ -11,6 +11,7 @@ import {
   Pressable,
   Button,
   VStack,
+  FlatList,
   ScrollView,
 } from "native-base";
 import Colors from "../color";
@@ -18,14 +19,17 @@ import { MaterialIcons, Ionicons, FontAwesome } from "@expo/vector-icons";
 import * as SQLite from "expo-sqlite";
 import { StyleSheet } from "react-native";
 
-function BudgetScreen() {
-  const db = SQLite.openDatabase("budgetPhoneApp.db");
+const db = SQLite.openDatabase("budgetPhoneApp.db");
 
+
+function BudgetScreen() {
+  
   const [showModal, setShowModal] = useState(false);
   const [category, setCategory] = useState("");
   const [value, setValue] = useState("");
   const [account, setAccount] = useState("");
   const [duration, setDuration] = useState("");
+  const [userBudgets, setUserBudgets] = useState([]);
 
   useEffect(() => {
     createtable();
@@ -53,6 +57,7 @@ function BudgetScreen() {
             console.log(resultSet.insertId);
             alert("Successfully saved Budget");
             setShowModal(false); // Close the modal
+            getData(); 
           },
           (txObj, error) => console.log("Error", error)
         );
@@ -68,18 +73,27 @@ function BudgetScreen() {
           tx.executeSql("select * from Budgets", [], (_, results) => {
             var len = results.rows.length;
             //  console.log(results.rows);
+            const budgetGet = results.rows._array.map(row=> ({
+              id: row.id,
+              category: row.category,
+              value: row.value,
+              account: row.account,
+              duration: row.duration
+            }));
+            setUserBudgets(budgetGet);
+            // if (len > 0) {
+            //   var categoryValue = results.rows.item(0).category;
+            //   var values = results.rows.item(0).value;
+            //   var accountValue = results.rows.item(0).account;
+            //   var durationValue = results.rows.item(0).duration;
 
-            if (len > 0) {
-              var categoryValue = results.rows.item(0).category;
-              var values = results.rows.item(0).value;
-              var accountValue = results.rows.item(0).account;
-              var durationValue = results.rows.item(0).duration;
+            //   // setCategory(categoryValue);
+            //   // setValue(values);
+            //   // setAccount(accountValue);
+            //   // setDuration(durationValue);
+            //   setUserBudgets()
 
-              setCategory(categoryValue);
-              setValue(values);
-              setAccount(accountValue);
-              setDuration(durationValue);
-            }
+            // }
           });
         },
         (txObj, error) => console.log("Error ", error, "getData")
@@ -114,40 +128,30 @@ function BudgetScreen() {
                 lineHeight: 40,
               }}
             >
-              Accounts
+             
             </Text>
             <MaterialIcons name="more-vert" size={24} color="black" />
           </HStack>
           <HStack justifyContent="space-between" color={"green"}>
             <VStack>
-              <Text
-                display="flex"
-                alignItems="center"
-                justifyContent="center"
-                _text={{
-                  fontWeight: "extrabold",
-                  fontSize: 32,
-                  color: "green",
-                  lineHeight: 40,
-                }}
-              >
-                Wallet
-              </Text>
-              <Text
-                display="flex"
-                alignItems="center"
-                justifyContent="center"
-                _text={{
-                  fontWeight: "extrabold",
-                  fontSize: 32,
-                  color: "green",
-                  lineHeight: 40,
-                }}
-              >
-                Last used: 08/12/2023
-              </Text>
+            <FlatList
+  data={userBudgets}
+  renderItem={({ item }) => (
+    <HStack justifyContent="space-between">
+      <Text>{item.category}</Text>
+      <Text>{item.value}</Text>
+      <HStack spacing={4}>
+        <FontAwesome name="edit" size={24} color="black" onPress={() => handleEdit(item.id)} />
+        <FontAwesome name="trash" size={24} color="black" onPress={() => handleDelete(item.id)} />
+      </HStack>
+    </HStack>
+  )}
+  keyExtractor={(item) => item.id.toString()}
+/>  
+
+
             </VStack>
-            <Text>$100.00</Text>
+            
           </HStack>
           <Divider />
           <HStack justifyContent="space-between" color={"green"}>
@@ -163,7 +167,7 @@ function BudgetScreen() {
                   lineHeight: 40,
                 }}
               >
-                Wallet
+              
               </Text>
               <Text
                 display="flex"
@@ -176,10 +180,10 @@ function BudgetScreen() {
                   lineHeight: 40,
                 }}
               >
-                Last used: 08/12/2023
+             
               </Text>
             </VStack>
-            <Text>$100.00</Text>
+         
           </HStack>
         </VStack>
       </ScrollView>
