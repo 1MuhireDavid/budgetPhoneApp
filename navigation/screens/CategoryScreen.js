@@ -20,9 +20,8 @@ import { StyleSheet } from "react-native";
 import Tabs from "../Components/Category/tabs";
 
 const db = SQLite.openDatabase("budgetPhoneApp.db");
-export default function CategoryScreen({navigation}) {
-
-    const [showModal, setShowModal] = useState(false);
+export default function CategoryScreen({ navigation }) {
+  const [showModal, setShowModal] = useState(false);
   const [name, setName] = useState("");
   const [value, setValue] = useState("");
   const [notes, setNotes] = useState("");
@@ -67,7 +66,7 @@ export default function CategoryScreen({navigation}) {
         (tx) => {
           tx.executeSql("select * from Categories", [], (_, results) => {
             //  console.log(results.rows._array);
-            const accountData = results.rows._array.map(row => ({
+            const accountData = results.rows._array.map((row) => ({
               id: row.id,
               name: row.name,
               value: row.value,
@@ -75,7 +74,6 @@ export default function CategoryScreen({navigation}) {
             }));
             setAccounts(accountData);
             console.log(accountData);
-
           });
         },
         (txObj, error) => console.log("Error ", error, "getData")
@@ -85,20 +83,19 @@ export default function CategoryScreen({navigation}) {
     }
   };
 
-    return (
-        <>
-        <Tabs/>
-      </>
-    )
+  return (
+    <>
+      <Tabs />
+    </>
+  );
 }
 const styles = StyleSheet.create({
-    floatingButton: {
-      position: "absolute",
-      width: 100,
-      height: 100,
-      alignItems: "center",
-      justifyContent: "center",
-      right: 20,
-      bottom: 50,
-    },
-  });
+  floatingButton: {
+    position: "absolute",
+
+    alignItems: "center",
+    justifyContent: "center",
+    right: 20,
+    bottom: 50,
+  },
+});
