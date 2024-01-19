@@ -30,12 +30,14 @@ const incomeName = "Income";
 const budgetName = "Budget";
 
 
+
 const Drawer = createDrawerNavigator();
 
-export default function MainContainer(){
+export default function MainContainer({route}){
+
     return (
-        <NavigationContainer>
-            <Drawer.Navigator
+        <>
+            <Drawer.Navigator 
         drawerContent={
           (props) => {
             return (
@@ -57,6 +59,7 @@ export default function MainContainer(){
                       width: 130,
                       borderRadius: 65,
                     }}
+                    alt={"Profile"}
                   />
                   <Text
                     style={{
@@ -65,13 +68,13 @@ export default function MainContainer(){
                       fontWeight: "bold",
                       color: "#111"
                     }}
-                  >Isabella Joanna</Text>
+                  > Product manager</Text>
                   <Text
                     style={{
                       fontSize: 16,
                       color: "#111"
                     }}
-                  >Product Manager</Text>
+                  ></Text>
                 </View>
                 <DrawerItemList {...props} />
               </SafeAreaView>
@@ -94,6 +97,7 @@ export default function MainContainer(){
             color: "#111"
           }
         }}
+        
       >
         <Drawer.Screen
           name={homeName}
@@ -164,8 +168,8 @@ export default function MainContainer(){
         <Drawer.Screen
           name={categoryName}
           options={{
-            drawerLabel: "Home",
-            title: "Home",
+            drawerLabel: "Category management",
+            title: "Category management",
             drawerIcon: () => (
               <MaterialIcons name="category" size={20} color="#808080" />
             )
@@ -173,6 +177,6 @@ export default function MainContainer(){
           component={CategoryScreen}
         />
       </Drawer.Navigator>
-        </NavigationContainer>
+        </>
     )
 }
