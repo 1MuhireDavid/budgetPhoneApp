@@ -12,11 +12,46 @@ import Colors from "../color.js";
 import { MaterialIcons, Ionicons } from "@expo/vector-icons";
 import SignUpScreen from "./SignUpScreen.js";
 import { TouchableOpacity } from "react-native";
+import * as SQLite from "expo-sqlite";
+
+const db = SQLite.openDatabase("budgetPhoneApp.db");
 
 function LoginScreen(props) {
-  const [username, setName] = useState("");
-  const [password, setpassword] = useState("");
+  const [username1, setUsername1] = useState("");
+  const [password1, setpassword1] = useState("");
   const {navigation} = props;
+
+  const handleLogin = async () => {
+    console.log(username1, "username");
+ if(username1 =="" && password1 =="" ){
+  return 
+ }
+ try {
+  // Query the database to check for matching credentials
+  await db.transaction((tx) => {
+      tx.executeSql(
+          "SELECT * FROM Users WHERE email = ? AND password = ?",
+          [username1, password1],
+          (txObj, resultSet) => {
+              if (resultSet.rows._array.length > 0) {
+                  // Successful login
+                  console.log("Login successful");
+                  // Navigate to the MainContainer screen
+                  navigation.navigate("MainContainer", { name: username1 });
+              } else {
+                  // Invalid credentials
+                  alert("Invalid username or password");
+              }
+          }
+      );
+  });
+} catch (error) {
+  console.error("Error during login:", error);
+}
+
+ 
+};
+
   return (
     <Box flex={1} bg="#fff" alignItems="center" justifyContent="center">
       <Heading> Login</Heading>
@@ -26,7 +61,7 @@ function LoginScreen(props) {
           InputLeftElement={
             <MaterialIcons name="email" size={20} color="black" />
           }
-          onChange={(name)=>setName(name)}
+          onChangeText={(name)=>setUsername1(name)}
           variant="underlined"
           placeholder="user@gmail.com"
           w="70%"
@@ -35,12 +70,12 @@ function LoginScreen(props) {
         {/* PASSWORD */}
         <Input
           InputLeftElement={<Ionicons name="eye" size={20} color="black" />}
-          type="password"
+          type="password1"
           variant="underlined"
           placeholder="********"
           w="70%"
           pl={2}
-          onChange={(password)=>setpassword(password)}
+          onChangeText={(password1)=>setpassword1(password1)}
         />
       </VStack>
       <Button
@@ -48,7 +83,7 @@ function LoginScreen(props) {
         w="40%"
         rounded={50}
         bg={"#1E88E5"}
-        onPress={() => navigation.navigate("MainContainer",{name:username})}
+        onPress={handleLogin}
       >
         Login
       </Button>
@@ -60,3 +95,6 @@ function LoginScreen(props) {
 }
 
 export default LoginScreen;
+LoginScreen.navigationOptions = {
+  headerLeft: null, // Hides the back button
+};
