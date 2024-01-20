@@ -28,7 +28,7 @@ function Tabs() {
     {...props}
     tabStyle= {styles.tabStyle}
     indicatorStyle={{backgroundColor: Colors.black}}
-    activeColor={Colors.main}
+    activeColor="#488600"
     inactiveColor={Colors.white}
     renderLabel={({ route, color }) => (
       <Text style={{ color, ...styles.text}}>{route.title}</Text>

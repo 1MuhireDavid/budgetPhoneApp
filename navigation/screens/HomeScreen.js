@@ -3,7 +3,6 @@ import {
   View,
   Text,
   StyleSheet,
-  DatePickerIOS,
   ScrollView,
   TextInput,
   Platform,
@@ -41,10 +40,11 @@ export default function HomeScreen({ navigation }) {
   const [froms, setFrom] = useState("");
   const [notes, setNotes] = useState("");
   const [tos, setTos] = useState("");
-  const [transactions, setTransactions] = useState([]);
+  const [categorys, setCategorys] = useState([]);
   const [expenseCategory, setExpenseCategory] = useState([]);
   const [incomeCategory, setIncomeCategory] = useState([]);
   const [accounts, setAccounts] = useState([]);
+  const [currentBalance, setCurrentBalance] = useState(0);
 
   useEffect(() => {
     createTable();
@@ -52,10 +52,10 @@ export default function HomeScreen({ navigation }) {
   }, []);
 
   const onAddIncome = () => {
-    setShowModal(true);
+    setShowModal(!showModal);
   };
   const onAddExpense = () => {
-    setShowModal1(true);
+    setShowModal1(!showModal1);
   };
   const createTable = () => {
     db.transaction((tx) => {
@@ -79,19 +79,24 @@ export default function HomeScreen({ navigation }) {
 
         // Update the account balance
         const accountId = account; // Assuming account is the ID
-        const currentBalance = await tx.executeSql(
-          "SELECT value FROM Accounts WHERE id = ?",
-          [accountId]
+        await db.transaction(
+          (tx) => {
+            tx.executeSql("SELECT value FROM Accounts WHERE id = ?", [accountId], (_, results) => {
+               console.log(results.rows._array[0].value,"valuessss");
+              const accvalue = results.rows._array[0].value + parseInt(value);
+             tx.executeSql("UPDATE Accounts SET value = ? WHERE id = ?", [
+                accvalue,
+                accountId,
+              ]);
+            });
+            
+          },
+          (txObj, error) => console.log("Error ", error, "getData")
         );
-        const newBalance = currentBalance + parseFloat(value);
-        await tx.executeSql("UPDATE Accounts SET value = ? WHERE id = ?", [
-          newBalance,
-          accountId,
-        ]);
       });
-
       setShowModal(false); // Close the modal
       alert("Successfully saved Income");
+      fetchData();
     } catch (error) {
       console.log(error);
     }
@@ -107,21 +112,23 @@ export default function HomeScreen({ navigation }) {
           },
           (txObj, error) => console.log("Error", error)
         );
-
         // Update the account balance
         const accountId = account; // Assuming account is the ID
-        const currentBalance = await tx.get(
-          "SELECT value FROM Accounts WHERE id = ?",
-          [accountId]
+        await db.transaction(
+          (tx) => {
+            tx.executeSql("SELECT value FROM Accounts WHERE id = ?", [accountId], (_, results) => {
+              const accvalue = results.rows._array[0].value - parseInt(value);
+             tx.executeSql("UPDATE Accounts SET value = ? WHERE id = ?", [
+                accvalue,
+                accountId,
+              ]);
+            });
+            
+          },
+          (txObj, error) => console.log("Error ", error, "getData")
         );
-        const newBalance = currentBalance - parseFloat(value);
-        await tx.executeSql("UPDATE Accounts SET value = ? WHERE id = ?", [
-          newBalance,
-          accountId,
-        ]);
       });
-
-      setShowModal(false); // Close the modal
+      setShowModal1(false); // Close the modal
       alert("Successfully saved Expense");
     } catch (error) {
       console.log(error);
@@ -166,6 +173,22 @@ export default function HomeScreen({ navigation }) {
       );
       await db.transaction(
         (tx) => {
+          tx.executeSql(
+            "select * from Categorys",
+            [],
+            (_, results) => {
+              const categoryData = results.rows._array.map((row) => ({
+                id: row.id,
+                name: row.name,
+              }));
+              setCategorys(categoryData);
+            }
+          );
+        },
+        (txObj, error) => console.log("Error ", error, "getData")
+      );
+      await db.transaction(
+        (tx) => {
           tx.executeSql("select * FROM Accounts", [], (_, results) => {
             //  console.log(results.rows._array);
             const accountData = results.rows._array.map((row) => ({
@@ -196,8 +219,12 @@ export default function HomeScreen({ navigation }) {
       const currentDate = selectedDate;
       setDate(currentDate);
       if (Platform.OS === "android") {
-        toggleDatePicker();
         setDateOfTransaction(currentDate.toDateString());
+        if(showPicker1){
+          toggleDatePicker1();
+        }else{
+          toggleDatePicker();
+        }
       }
     } else {
       toggleDatePicker();
@@ -267,6 +294,55 @@ export default function HomeScreen({ navigation }) {
             </VStack>
           ))}
         </VStack>
+        <VStack
+          space={3}
+          w="full"
+          mx={3}
+          px={6}
+          py={4}
+          bgColor={Colors.white}
+          color={Colors.black}
+          mt={5}
+        >
+          <HStack justifyContent="space-between" color={"green"}>
+            <Text style={{ color: "#f4511e" }}>Categories</Text>
+            <Text style={{ color: "#f4511e" }}>Last Used</Text>
+          </HStack>
+
+          {categorys.map((account) => (
+            <VStack key={account.id}>
+              <HStack justifyContent="space-between" color={"green"}>
+                <VStack>
+                  <Text
+                    display="flex"
+                    alignItems="center"
+                    justifyContent="center"
+                    _text={{
+                      fontWeight: "extrabold",
+                      fontSize: 32,
+                      color: "green",
+                      lineHeight: 40,
+                    }}
+                  >
+                    {account.name}
+                  </Text>
+                  <Text
+                    display="flex"
+                    alignItems="center"
+                    justifyContent="center"
+                    _text={{
+                      fontWeight: "extrabold",
+                      fontSize: 32,
+                      color: "green",
+                      lineHeight: 40,
+                    }}
+                  ></Text>
+                </VStack>
+              </HStack>
+              <Divider />
+            </VStack>
+          ))}
+        </VStack>
       </ScrollView>
       <Pressable onPress={onAddIncome} style={styles.floatingButton}>
         <Ionicons name="add-circle" size={100} color="#2EB432" />
@@ -286,7 +362,7 @@ export default function HomeScreen({ navigation }) {
                     endIcon: <CheckIcon size={5} />,
                   }}
                   mt="1"
-                  onValueChange={(id) => setCategory(id)}
+                  onValueChange={(id) => setCategory(parseInt(id))}
                 >
                   {incomeCategory.map((category) => (
                     <Select.Item
@@ -316,7 +392,7 @@ export default function HomeScreen({ navigation }) {
                     endIcon: <CheckIcon size={5} />,
                   }}
                   mt="1"
-                  onValueChange={(id) => setAccount(id)}
+                  onValueChange={(id) => setAccount(parseInt(id))}
                 >
                   {accounts.map((account) => (
                     <Select.Item
@@ -402,7 +478,7 @@ export default function HomeScreen({ navigation }) {
                     endIcon: <CheckIcon size={5} />,
                   }}
                   mt="1"
-                  onValueChange={(id) => setCategory(id)}
+                  onValueChange={(id) => setCategory(parseInt(id))}
                 >
                   {expenseCategory.map((category) => (
                     <Select.Item
@@ -432,7 +508,7 @@ export default function HomeScreen({ navigation }) {
                     endIcon: <CheckIcon size={5} />,
                   }}
                   mt="1"
-                  onValueChange={(id) => setAccount(id)}
+                  onValueChange={(id) => setAccount(parseInt(id))}
                 >
                   {accounts.map((account) => (
                     <Select.Item
@@ -445,7 +521,7 @@ export default function HomeScreen({ navigation }) {
               </FormControl>
               <FormControl isRequired>
                 <FormControl.Label>date</FormControl.Label>
-                {showPicker && (
+                {showPicker1 && (
                   <DateTimePicker
                     mode="date"
                     display="spinner"

@@ -12,8 +12,8 @@ export default function AuthNavigator() {
   return (
     <Stack.Navigator initialRouteName={Login}>
       <Stack.Screen name="Login" component={LoginScreen} />
-      <Stack.Screen name="SignUp" component={SignUpScreen} />
-      <Stack.Screen name="MainContainer" component={MainContainer} />
+      <Stack.Screen name="Signup" component={SignUpScreen} />
+      <Stack.Screen name="MainContainer" options={({ route }) =>({headerBackTitleVisible: false})}  component={MainContainer} />
     </Stack.Navigator>
   )
 }

@@ -8,10 +8,7 @@ import {
   Text,
 } from "native-base";
 import React, { useState } from "react";
-import Colors from "../color.js";
 import { MaterialIcons, Ionicons } from "@expo/vector-icons";
-import SignUpScreen from "./SignUpScreen.js";
-import { TouchableOpacity } from "react-native";
 import * as SQLite from "expo-sqlite";
 
 const db = SQLite.openDatabase("budgetPhoneApp.db");
@@ -22,7 +19,6 @@ function LoginScreen(props) {
   const {navigation} = props;
 
   const handleLogin = async () => {
-    console.log(username1, "username");
  if(username1 =="" && password1 =="" ){
   return 
  }
@@ -59,7 +55,7 @@ function LoginScreen(props) {
         {/* EMAIL */}
         <Input
           InputLeftElement={
-            <MaterialIcons name="email" size={20} color="black" />
+            <MaterialIcons name="email" size={30} color="#1E88E5" />
           }
           onChangeText={(name)=>setUsername1(name)}
           variant="underlined"
@@ -69,8 +65,8 @@ function LoginScreen(props) {
         />
         {/* PASSWORD */}
         <Input
-          InputLeftElement={<Ionicons name="eye" size={20} color="black" />}
-          type="password1"
+          InputLeftElement={<Ionicons name="eye" size={30} color="#1E88E5" />}
+          type="password"
           variant="underlined"
           placeholder="********"
           w="70%"
@@ -80,16 +76,22 @@ function LoginScreen(props) {
       </VStack>
       <Button
         my={30}
-        w="40%"
+        w="50%"
         rounded={50}
         bg={"#1E88E5"}
         onPress={handleLogin}
       >
         Login
       </Button>
-      <TouchableOpacity onPress={() => navigation.navigate("SignUp")}>
-        <Text>Move to Signup Screen</Text>
-      </TouchableOpacity>
+      <Button
+        my={30}
+        w="50%"
+        rounded={50}
+        bg={"#1E88E5"}
+        onPress={() => navigation.navigate("Signup")}
+      >
+        Move to Signup Screen
+      </Button>
     </Box>
   );
 }

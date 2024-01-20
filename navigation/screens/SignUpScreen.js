@@ -4,11 +4,8 @@ import {
   Heading,
   Input,
   Button,
-  Pressable,
-  Text,
 } from "native-base";
 import React, { useEffect, useState } from "react";
-import Colors from "../color.js";
 import { MaterialIcons, Ionicons, FontAwesome } from "@expo/vector-icons";
 import * as SQLite from "expo-sqlite";
 import { StyleSheet } from "react-native";
@@ -58,7 +55,6 @@ function SignUpScreen({ navigation }) {
       await db.transaction(
         (tx) => {
           tx.executeSql("select * from Users", [], (_, results) => {
-            console.log(results.rows._array);
             const userData = results.rows._array.map((row) => ({
               id: row.id,
               username: row.username,
@@ -81,7 +77,7 @@ function SignUpScreen({ navigation }) {
       <VStack space={5} pt="6">
         {/* USERNAME */}
         <Input
-          InputLeftElement={<FontAwesome name="user" size={20} color="black" />}
+          InputLeftElement={<FontAwesome name="user" size={20} color="#1E88E5" />}
           type="text"
           variant="underlined"
           placeholder="John Doe"
@@ -93,7 +89,7 @@ function SignUpScreen({ navigation }) {
         {/* EMAIL */}
         <Input
           InputLeftElement={
-            <MaterialIcons name="email" size={20} color="black" />
+            <MaterialIcons name="email" size={30} color="#1E88E5" />
           }
           type="email"
           variant="underlined"
@@ -105,7 +101,7 @@ function SignUpScreen({ navigation }) {
         />
         {/* PASSWORD */}
         <Input
-          InputLeftElement={<Ionicons name="eye" size={20} color="black" />}
+          InputLeftElement={<Ionicons name="eye" size={30} color="#1E88E5" />}
           type="password"
           variant="underlined"
           placeholder="********"
@@ -119,9 +115,9 @@ function SignUpScreen({ navigation }) {
         SIGN UP
       </Button>
 
-      <Pressable mt={4} onPress={() => navigation.navigate("Login")}>
-        <Text color={Colors.blue}>Login</Text>
-      </Pressable>
+      <Button my={30} w="40%" rounded={50} bg={"#1E88E5"} onPress={() => navigation.navigate("Login")}>
+        Login
+      </Button>
     </Box>
   );
 }

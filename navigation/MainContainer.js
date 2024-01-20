@@ -3,9 +3,7 @@ import { NavigationContainer } from "@react-navigation/native";
 import { DrawerItemList, createDrawerNavigator } from "@react-navigation/drawer";
 import Favicon from "../assets/favicon.png";
 import {
-    SimpleLineIcons,
     MaterialIcons,
-    MaterialCommunityIcons,
     FontAwesome,Ionicons
   } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -14,10 +12,7 @@ import { Image, Text, View } from "native-base";
 import HomeScreen from "./screens/HomeScreen";
 import CategoryScreen from "./screens/CategoryScreen";
 import TransactionScreen from "./screens/transactionScreen";
-import GraphScreen from "./screens/graphScreen";
 import AccountScreen from "./screens/AccountScreen";
-import ExpenseScreen from "./screens/ExpenseScreen";
-import IncomeScreen from "./screens/IncomeScreen";
 import BudgetScreen from "./screens/BudgetScreen";
 
 const homeName = "Home";
@@ -34,7 +29,6 @@ const budgetName = "Budget";
 const Drawer = createDrawerNavigator();
 
 export default function MainContainer({route}){
-
     return (
         <>
             <Drawer.Navigator 
@@ -68,7 +62,7 @@ export default function MainContainer({route}){
                       fontWeight: "bold",
                       color: "#111"
                     }}
-                  > Product manager</Text>
+                  >{route.params.name}</Text>
                   <Text
                     style={{
                       fontSize: 16,
@@ -87,7 +81,7 @@ export default function MainContainer({route}){
             width: 250
           },
           headerStyle: {
-            backgroundColor: "#f4511e",
+            backgroundColor: "#488600",
           },
           headerTintColor: "#fff",
           headerTitleStyle: {
@@ -122,17 +116,6 @@ export default function MainContainer({route}){
           component={BudgetScreen}
         />
         <Drawer.Screen
-          name={graphName}
-          options={{
-            drawerLabel: "Chart",
-            title: "Chart",
-            drawerIcon: () => (
-              <MaterialIcons name="timeline" size={24} color="black" />
-            )
-          }}
-          component={GraphScreen}
-        />
-        <Drawer.Screen
           name={transactionName}
           options={{
             drawerLabel: "Transaction",
@@ -153,17 +136,6 @@ export default function MainContainer({route}){
             )
           }}
           component={AccountScreen}
-        />
-        <Drawer.Screen
-          name={incomeName}
-          options={{
-            drawerLabel: "Income",
-            title: "Income",
-            drawerIcon: () => (
-              <SimpleLineIcons name="home" size={20} color="#808080" />
-            )
-          }}
-          component={IncomeScreen}
         />
         <Drawer.Screen
           name={categoryName}

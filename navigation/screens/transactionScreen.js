@@ -16,22 +16,28 @@ export default function TransactionScreen({navigation}) {
   const [updatedDate, setUpdatedDate] = useState('');
   const [updatedFrom, setUpdatedFrom] = useState('');
   const [updatedNotes, setUpdatedNotes] = useState('');
+  const [expenseCategory, setExpenseCategory] = useState([]);
+  const [incomeCategory, setIncomeCategory] = useState([]);
+  const [accounts, setAccounts] = useState([]);
+  const [categoryNames, setCategoryNames] = useState({});
+  const [accountNames, setAccountNames] = useState({});
+
 
     const handleUpdate = async(transactionId) => {
       try {
         await db.transaction(
           (tx) => {
             tx.executeSql(`select * from Transactions WHERE id = ${transactionId}`, [], (_, results) => {
-                console.log(results.rows._array);
-                
-                setUpdatedTransaction(transactionData);
-                setUpdatedCategory(transactionData.category);
-                setUpdatedAccount(transactionData.account);
-                setUpdatedValue(transactionData.value);
-                setUpdatedDate(transactionData.date);
-                setUpdatedFrom(transactionData.froms);
-                setUpdatedNotes(transactionData.notes);
-                setUpdateModalVisible(true);
+            //  console.log(results.rows._array[0].account,"updated transaction");
+              const transactionData= results.rows._array;
+              setUpdatedTransaction(transactionData);
+              setUpdatedCategory(transactionData[0].category);
+              setUpdatedAccount(transactionData[0].account);
+              setUpdatedValue(transactionData[0].value);
+              setUpdatedDate(transactionData[0].date);
+              setUpdatedFrom(transactionData[0].froms);
+              setUpdatedNotes(transactionData[0].notes);
+              setUpdateModalVisible(!isUpdateModalVisible);
 
             });
           },
@@ -119,11 +125,35 @@ export default function TransactionScreen({navigation}) {
             })
           },(txObj, error) => console.log('Error ', error, "getData") 
           )
+
+          await db.transaction(
+            (tx) => {
+              tx.executeSql("select * from Categorys", [], (_, results) => {
+                const categoryData = results.rows._array.reduce((acc, row) => {
+                  acc[row.id] = row.name;
+                  return acc;
+                }, {});
+                setCategoryNames(categoryData);
+              });
+            },
+            (txObj, error) => console.log('Error ', error, 'fetchCategories')
+          );
+          await db.transaction(
+            (tx) => {
+              tx.executeSql("select * from Accounts", [], (_, results) => {
+                const accountData = results.rows._array.reduce((acc, row) => {
+                  acc[row.id] = row.name;
+                  return acc;
+                }, {});
+                setAccountNames(accountData);
+              });
+            },
+            (txObj, error) => console.log('Error ', error, 'fetchAccounts')
+          );
         } catch (error) {
           console.log(error);
         }
       }
-
 
     return (
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center'}}>
@@ -150,10 +180,10 @@ export default function TransactionScreen({navigation}) {
           >
             <View style={{ flex: 1 }}>
               <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 8 }}>
-                {transaction.category}
+              Category: {categoryNames[parseInt(transaction.category)]}
               </Text>
               <Text style={{ fontSize: 16, marginBottom: 4 }}>
-                Account: {transaction.account}
+                Account: {accountNames[parseInt(transaction.account)]}
               </Text>
               <Text style={{ fontSize: 16, marginBottom: 4 }}>
                 Value: {transaction.value}
@@ -195,7 +225,7 @@ export default function TransactionScreen({navigation}) {
               <TextInput
                 placeholder="Value"
                 value={updatedValue}
-                onChangeText={(text) => setUpdatedValue(text)}
+                onValueChange={(value) => setUpdatedValue(value)}
                 style={{ marginBottom: 16, padding: 8, borderColor: '#ccc', borderWidth: 1, borderRadius: 4 }}
               />
               </View>
@@ -210,7 +240,7 @@ export default function TransactionScreen({navigation}) {
               <View>
               <TextInput
                 placeholder="Sat Aug 21 2024"
-                value={updatedValue}
+                value={updatedDate}
                 onChangeText={(text) => setUpdatedDate(text)}
                 style={{ marginBottom: 16, padding: 8, borderColor: '#ccc', borderWidth: 1, borderRadius: 4 }}
               />
@@ -218,7 +248,7 @@ export default function TransactionScreen({navigation}) {
               <View>
               <TextInput
                 placeholder="from"
-                value={updatedValue}
+                value={updatedFrom}
                 onChangeText={(text) => setUpdatedFrom(text)}
                 style={{ marginBottom: 16, padding: 8, borderColor: '#ccc', borderWidth: 1, borderRadius: 4 }}
               />
@@ -226,13 +256,13 @@ export default function TransactionScreen({navigation}) {
               <View>
               <TextInput
                 placeholder="notes"
-                value={updatedValue}
+                value={updatedNotes}
                 onChangeText={(text) => setUpdatedNotes(text)}
                 style={{ marginBottom: 16, padding: 8, borderColor: '#ccc', borderWidth: 1, borderRadius: 4 }}
               />
               </View>
-              <Button style={{ color: 'white', margin: "10px", backgroundColor: "black"}} onPress={updateTransaction} > Update</Button>
-              <Button style={{ color: 'black', marginBottom: "10px", backgroundColor: "wheat"}} onPress={() => setUpdateModalVisible(false)} >Cancel</Button>
+              <Button style={{ color: 'white', margin: "10px", backgroundColor: "#1E88E5"}} onPress={updateTransaction} > Update</Button>
+              <Button style={{ color: "#1E88E5", marginBottom: "10px", backgroundColor: "white"}} onPress={() => setUpdateModalVisible(false)} >Cancel</Button>
             </View>
           </View>
         </Modal>
