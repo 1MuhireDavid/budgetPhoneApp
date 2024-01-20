@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState,useRef } from "react";
 import {
   Text,
   View,
@@ -14,8 +14,18 @@ import {
 import { MaterialIcons,Ionicons } from "@expo/vector-icons";
 import * as SQLite from "expo-sqlite";
 import { Alert,StyleSheet } from "react-native";
+import * as Notifications from 'expo-notifications';
 
 const db = SQLite.openDatabase("budgetPhoneApp.db");
+
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: false,
+    shouldSetBadge: false,
+  }),
+});
+
 
 const Income = () => {
   const [showModal, setShowModal] = useState(false);
@@ -24,10 +34,28 @@ const Income = () => {
   const [selectedIncomeTab, setSelectedIncomeTab] = useState(null);
   const [showOptionsModal, setShowOptionsModal] = useState(false);
   const [showUpdateModal, setShowUpdateModal] = useState(false);
+  const [expoPushToken, setExpoPushToken] = useState('');
+  const [notification, setNotification] = useState(false);
+  const notificationListener = useRef();
+  const responseListener = useRef();
 
   useEffect(() => {
     createtable();
     getData();
+    registerForPushNotificationsAsync().then(token => setExpoPushToken(token));
+
+    notificationListener.current = Notifications.addNotificationReceivedListener(notification => {
+      setNotification(notification);
+    });
+
+    responseListener.current = Notifications.addNotificationResponseReceivedListener(response => {
+      console.log(response);
+    });
+
+    return () => {
+      Notifications.removeNotificationSubscription(notificationListener);
+      Notifications.removeNotificationSubscription(responseListener);
+    };
   }, []);
 
   const onAddIncomeCategory = () => {
@@ -52,6 +80,7 @@ const Income = () => {
             console.log(resultSet.insertId);
             alert("Successfully saved category");
             setShowModal(false);
+            schedulePushNotification("Income category created", "Successfully saved new Income category");
           },
           (txObj, error) => console.log("Error", error)
         );
@@ -109,6 +138,7 @@ const Income = () => {
             Alert.alert("Success!", "Your data has been updated.");
             setShowUpdateModal(false);
             setShowOptionsModal(!showOptionsModal);
+            schedulePushNotification("Income category updated", "Successfully updated Income category");
             getData();
           },
           (error) => {
@@ -134,6 +164,7 @@ const Income = () => {
           () => {
             Alert.alert("Success!", "Your data has been deleted.");
             setShowOptionsModal(!showOptionsModal);
+            schedulePushNotification("Income category removed", "Successfully removed Income category");
             getData();
           },
           (error) => {
@@ -145,6 +176,46 @@ const Income = () => {
       console.log(error);
     }
   };
+  async function schedulePushNotification(title, description) {
+    await Notifications.scheduleNotificationAsync({
+      content: {
+        title: title,
+        body: description,
+        data: { data: 'goes here' },
+      },
+      trigger: { seconds: 2 },
+    });
+  }
+  async function registerForPushNotificationsAsync() {
+    let token;
+  
+    if (Platform.OS === 'android') {
+      await Notifications.setNotificationChannelAsync('default', {
+        name: 'default',
+        importance: Notifications.AndroidImportance.MAX,
+        vibrationPattern: [0, 250, 250, 250],
+        lightColor: '#FF231F7C',
+      });
+    }
+    if (Device.isDevice) {
+      const { status: existingStatus } = await Notifications.getPermissionsAsync();
+      let finalStatus = existingStatus;
+      if (existingStatus !== 'granted') {
+        const { status } = await Notifications.requestPermissionsAsync();
+        finalStatus = status;
+      }
+      if (finalStatus !== 'granted') {
+        alert('Failed to get push token for push notification!');
+        return;
+      }
+      token = (await Notifications.getExpoPushTokenAsync()).data;
+      console.log(token);
+    } else {
+      alert('Must use physical device for Push Notifications');
+    }
+  
+    return token;
+  }
 
   return (
     <View>

@@ -35,7 +35,8 @@
     "react-native-svg": "^14.1.0",
     "react-native-swipe-list-view": "^3.2.9",
     "react-native-tab-view": "^3.5.2",
-    "react-native-web": "~0.19.6"
+    "react-native-web": "~0.19.6",
+    "expo-notifications": "~0.20.1"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0"

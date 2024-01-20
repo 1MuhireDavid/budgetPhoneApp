@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState,useRef } from "react";
 import {
   View,
   Text,
@@ -24,8 +24,16 @@ import Colors from "../color";
 import { MaterialIcons, Ionicons, FontAwesome } from "@expo/vector-icons";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import * as SQLite from "expo-sqlite";
+import * as Notifications from 'expo-notifications';
 
 const db = SQLite.openDatabase("budgetPhoneApp.db");
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: false,
+    shouldSetBadge: false,
+  }),
+});
 
 export default function HomeScreen({ navigation }) {
   const [showModal, setShowModal] = useState(false);
@@ -45,10 +53,28 @@ export default function HomeScreen({ navigation }) {
   const [incomeCategory, setIncomeCategory] = useState([]);
   const [accounts, setAccounts] = useState([]);
   const [currentBalance, setCurrentBalance] = useState(0);
+  const [expoPushToken, setExpoPushToken] = useState('');
+  const [notification, setNotification] = useState(false);
+  const notificationListener = useRef();
+  const responseListener = useRef();
 
   useEffect(() => {
     createTable();
     fetchData();
+    registerForPushNotificationsAsync().then(token => setExpoPushToken(token));
+
+    notificationListener.current = Notifications.addNotificationReceivedListener(notification => {
+      setNotification(notification);
+    });
+
+    responseListener.current = Notifications.addNotificationResponseReceivedListener(response => {
+      console.log(response);
+    });
+
+    return () => {
+      Notifications.removeNotificationSubscription(notificationListener);
+      Notifications.removeNotificationSubscription(responseListener);
+    };
   }, []);
 
   const onAddIncome = () => {
@@ -97,6 +123,7 @@ export default function HomeScreen({ navigation }) {
       setShowModal(false); // Close the modal
       alert("Successfully saved Income");
       fetchData();
+      schedulePushNotification("Transaction created successfully", "type income");
     } catch (error) {
       console.log(error);
     }
@@ -207,6 +234,46 @@ export default function HomeScreen({ navigation }) {
       console.log(error);
     }
   };
+  async function schedulePushNotification(title, description) {
+    await Notifications.scheduleNotificationAsync({
+      content: {
+        title: title,
+        body: description,
+        data: { data: 'goes here' },
+      },
+      trigger: { seconds: 2 },
+    });
+  }
+  async function registerForPushNotificationsAsync() {
+    let token;
+  
+    if (Platform.OS === 'android') {
+      await Notifications.setNotificationChannelAsync('default', {
+        name: 'default',
+        importance: Notifications.AndroidImportance.MAX,
+        vibrationPattern: [0, 250, 250, 250],
+        lightColor: '#FF231F7C',
+      });
+    }
+    if (Device.isDevice) {
+      const { status: existingStatus } = await Notifications.getPermissionsAsync();
+      let finalStatus = existingStatus;
+      if (existingStatus !== 'granted') {
+        const { status } = await Notifications.requestPermissionsAsync();
+        finalStatus = status;
+      }
+      if (finalStatus !== 'granted') {
+        alert('Failed to get push token for push notification!');
+        return;
+      }
+      token = (await Notifications.getExpoPushTokenAsync()).data;
+      console.log(token);
+    } else {
+      alert('Must use physical device for Push Notifications');
+    }
+  
+    return token;
+  }
 
   const toggleDatePicker = () => {
     setShowpicker(!showPicker);

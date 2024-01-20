@@ -1,10 +1,18 @@
-import  React, { useEffect, useState } from "react";
+import  React, { useEffect, useState,useRef } from "react";
 import { Button, ScrollView, Text, View } from "native-base";
 import * as SQLite from 'expo-sqlite';
 import { Ionicons } from "@expo/vector-icons";
 import { TextInput, TouchableOpacity,Modal } from "react-native";
+import * as Notifications from 'expo-notifications';
 
 const db = SQLite.openDatabase('budgetPhoneApp.db');
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: false,
+    shouldSetBadge: false,
+  }),
+});
 
 export default function TransactionScreen({navigation}) {
   const [transactions, setTransactions] = useState([]);
@@ -21,6 +29,10 @@ export default function TransactionScreen({navigation}) {
   const [accounts, setAccounts] = useState([]);
   const [categoryNames, setCategoryNames] = useState({});
   const [accountNames, setAccountNames] = useState({});
+  const [expoPushToken, setExpoPushToken] = useState('');
+  const [notification, setNotification] = useState(false);
+  const notificationListener = useRef();
+  const responseListener = useRef();
 
 
     const handleUpdate = async(transactionId) => {
@@ -61,6 +73,7 @@ export default function TransactionScreen({navigation}) {
                   console.log(`Transaction with ID ${updatedTransaction.id} updated successfully`);
                   setUpdateModalVisible(false);
                   fetchTransactions(); // Fetch updated transactions after update
+                  schedulePushNotification("Transaction created successfully", "Transaction created successfully");
                 } else {
                   console.log(`No transaction found with ID ${updatedTransaction.id}`);
                 }
@@ -86,6 +99,7 @@ export default function TransactionScreen({navigation}) {
                   console.log(`Transaction with ID ${transactionId} deleted successfully`);
                   // Fetch updated transactions after deletion
                   fetchTransactions();
+                  schedulePushNotification("Transaction deleted", `Transaction deleted successfully with ID ${transactionId}`);
                 } else {
                   console.log(`No transaction found with ID ${transactionId}`);
                 }
@@ -101,6 +115,20 @@ export default function TransactionScreen({navigation}) {
 
     useEffect(() => {
         fetchTransactions();
+        registerForPushNotificationsAsync().then(token => setExpoPushToken(token));
+
+    notificationListener.current = Notifications.addNotificationReceivedListener(notification => {
+      setNotification(notification);
+    });
+
+    responseListener.current = Notifications.addNotificationResponseReceivedListener(response => {
+      console.log(response);
+    });
+
+    return () => {
+      Notifications.removeNotificationSubscription(notificationListener);
+      Notifications.removeNotificationSubscription(responseListener);
+    };
     },[])
     const fetchTransactions = async () => {
         try {
@@ -153,6 +181,46 @@ export default function TransactionScreen({navigation}) {
         } catch (error) {
           console.log(error);
         }
+      }
+      async function schedulePushNotification(title, description) {
+        await Notifications.scheduleNotificationAsync({
+          content: {
+            title: title,
+            body: description,
+            data: { data: 'goes here' },
+          },
+          trigger: { seconds: 2 },
+        });
+      }
+      async function registerForPushNotificationsAsync() {
+        let token;
+      
+        if (Platform.OS === 'android') {
+          await Notifications.setNotificationChannelAsync('default', {
+            name: 'default',
+            importance: Notifications.AndroidImportance.MAX,
+            vibrationPattern: [0, 250, 250, 250],
+            lightColor: '#FF231F7C',
+          });
+        }
+        if (Device.isDevice) {
+          const { status: existingStatus } = await Notifications.getPermissionsAsync();
+          let finalStatus = existingStatus;
+          if (existingStatus !== 'granted') {
+            const { status } = await Notifications.requestPermissionsAsync();
+            finalStatus = status;
+          }
+          if (finalStatus !== 'granted') {
+            alert('Failed to get push token for push notification!');
+            return;
+          }
+          token = (await Notifications.getExpoPushTokenAsync()).data;
+          console.log(token);
+        } else {
+          alert('Must use physical device for Push Notifications');
+        }
+      
+        return token;
       }
 
     return (
