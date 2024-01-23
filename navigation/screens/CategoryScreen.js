@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import {
   Text,
   View,
@@ -17,7 +17,6 @@ import Colors from "../color";
 import { MaterialIcons, Ionicons, FontAwesome } from "@expo/vector-icons";
 import Tabs from "../Components/Category/tabs";
 
-const db = SQLite.openDatabase("budgetPhoneApp.db");
 export default function CategoryScreen({ navigation }) {
   return (
     <>

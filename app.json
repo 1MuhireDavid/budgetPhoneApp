@@ -2,6 +2,7 @@
   "expo": {
     "name": "BudgetTracker",
     "slug": "BudgetTracker",
+    "description": "This is an awesome budget manager",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/favicon.png",
@@ -21,10 +22,16 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/favicon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.muhiredavid.BudgetTracker"
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "59300ecc-669e-43ca-beb0-a5657d8d435d"
+      }
     }
   }
 }

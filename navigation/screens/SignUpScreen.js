@@ -10,6 +10,8 @@ import { MaterialIcons, Ionicons, FontAwesome } from "@expo/vector-icons";
 import * as SQLite from "expo-sqlite";
 import { StyleSheet } from "react-native";
 import * as Notifications from 'expo-notifications';
+import * as Device from 'expo-device';
+import * as Permissions from 'expo-permissions';
 
 
 

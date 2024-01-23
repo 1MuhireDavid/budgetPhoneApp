@@ -25,6 +25,8 @@ import { MaterialIcons, Ionicons, FontAwesome } from "@expo/vector-icons";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import * as SQLite from "expo-sqlite";
 import * as Notifications from 'expo-notifications';
+import * as Device from 'expo-device';
+import * as Permissions from 'expo-permissions';
 
 const db = SQLite.openDatabase("budgetPhoneApp.db");
 Notifications.setNotificationHandler({
@@ -35,6 +37,14 @@ Notifications.setNotificationHandler({
   }),
 });
 
+const quotes = [
+  "Save for a rainy day!",
+  "Budgeting is the key to financial freedom.",
+  "Cut your coat according to your cloth.",
+  "A penny saved is a penny earned.",
+  "Invest in your financial future.",
+  // Add more quotes as needed
+];
 export default function HomeScreen({ navigation }) {
   const [showModal, setShowModal] = useState(false);
   const [showModal1, setShowModal1] = useState(false);
@@ -52,11 +62,11 @@ export default function HomeScreen({ navigation }) {
   const [expenseCategory, setExpenseCategory] = useState([]);
   const [incomeCategory, setIncomeCategory] = useState([]);
   const [accounts, setAccounts] = useState([]);
-  const [currentBalance, setCurrentBalance] = useState(0);
   const [expoPushToken, setExpoPushToken] = useState('');
   const [notification, setNotification] = useState(false);
   const notificationListener = useRef();
   const responseListener = useRef();
+  const [quote, setQuote] = useState("");
 
   useEffect(() => {
     createTable();
@@ -70,6 +80,7 @@ export default function HomeScreen({ navigation }) {
     responseListener.current = Notifications.addNotificationResponseReceivedListener(response => {
       console.log(response);
     });
+    setRandomQuote();
 
     return () => {
       Notifications.removeNotificationSubscription(notificationListener);
@@ -274,6 +285,10 @@ export default function HomeScreen({ navigation }) {
   
     return token;
   }
+  const setRandomQuote = () => {
+    const randomIndex = Math.floor(Math.random() * quotes.length);
+    setQuote(quotes[randomIndex]);
+  };
 
   const toggleDatePicker = () => {
     setShowpicker(!showPicker);
@@ -302,11 +317,10 @@ export default function HomeScreen({ navigation }) {
     <>
       <ScrollView overflow="hidden">
         <View style={{ margin: 20 }}>
-          <LinearGradient colors={["#9440FD", "#6B47F8"]}>
-            <View style={{ height: 60, width: 100 }}>
-              <Text style={{ color: "black", display: "flex", fontSize: 17 }}>
-                {" "}
-                Buget Tracker
+          <LinearGradient colors={["#DAA520", "#8B4513"]}>
+            <View style={{ height: 60, display: "flex",justifyContent: "center",alignItems: "center"  }}>
+              <Text style={{ color: "black", fontSize: 17 }}>
+              {quote || "Budget Tracker"}
               </Text>
             </View>
           </LinearGradient>

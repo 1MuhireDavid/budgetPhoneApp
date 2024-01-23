@@ -22,14 +22,16 @@ import { MaterialIcons, Ionicons, FontAwesome } from "@expo/vector-icons";
 import * as SQLite from "expo-sqlite";
 import { Alert,StyleSheet } from "react-native";
 import * as Notifications from 'expo-notifications';
+import * as Device from 'expo-device';
+import * as Permissions from 'expo-permissions';
 
 const db = SQLite.openDatabase("budgetPhoneApp.db");
-const [expoPushToken, setExpoPushToken] = useState('');
-  const [notification, setNotification] = useState(false);
-  const notificationListener = useRef();
-  const responseListener = useRef();
 
 function BudgetScreen() {
+  const [expoPushToken, setExpoPushToken] = useState('');
+    const [notification, setNotification] = useState(false);
+    const notificationListener = useRef();
+    const responseListener = useRef();
   
   const [showModal, setShowModal] = useState(false);
   const [category, setCategory] = useState("");

@@ -4,6 +4,8 @@ import * as SQLite from 'expo-sqlite';
 import { Ionicons } from "@expo/vector-icons";
 import { TextInput, TouchableOpacity,Modal } from "react-native";
 import * as Notifications from 'expo-notifications';
+import * as Device from 'expo-device';
+import * as Permissions from 'expo-permissions';
 
 const db = SQLite.openDatabase('budgetPhoneApp.db');
 Notifications.setNotificationHandler({

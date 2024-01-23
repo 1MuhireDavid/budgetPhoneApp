@@ -17,11 +17,8 @@ import BudgetScreen from "./screens/BudgetScreen";
 
 const homeName = "Home";
 const categoryName = "Category";
-const graphName = "Graph";
 const transactionName = "Transaction";
 const accountName = "Account";
-const expenseName = "Expense";
-const incomeName = "Income";
 const budgetName = "Budget";
 
 
